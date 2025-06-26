@@ -42,9 +42,9 @@ if st.sidebar.button("🔄 Limpiar filtros"):
 desde = st.sidebar.date_input("Desde", value=date_min, min_value=date_min, max_value=date_max)
 hasta = st.sidebar.date_input("Hasta", value=date_max, min_value=date_min, max_value=date_max)
 
-cuentas_disponibles = df['Nombre cuenta'].dropna().unique()
+cuentas_disponibles = df['Nomb_Cuenta'].dropna().unique()
 cuentas_seleccionadas = st.sidebar.multiselect(
-    "Nombre cuenta",
+    "Nomb_Cuenta",
     options=sorted(cuentas_disponibles.tolist()),
     default=cuentas_disponibles.tolist(),
     help="Buscá y seleccioná una o más cuentas"
@@ -60,7 +60,7 @@ if desde > hasta:
 # Aplicar filtros
 df_filtrado = df[(df['Fecha'] >= desde) & (df['Fecha'] <= hasta)]
 if cuentas_seleccionadas:
-    df_filtrado = df_filtrado[df_filtrado['Nombre cuenta'].isin(cuentas_seleccionadas)]
+    df_filtrado = df_filtrado[df_filtrado['Nomb_Cuenta'].isin(cuentas_seleccionadas)]
 if usuario_input:
     df_filtrado = df_filtrado[df_filtrado['Usuario'].astype(str).str.contains(usuario_input, case=False, na=False)]
 if comp_input:
@@ -68,7 +68,7 @@ if comp_input:
 
 anteriores = df[(df['Fecha'] < desde)]
 if cuentas_seleccionadas:
-    anteriores = anteriores[anteriores['Nombre cuenta'].isin(cuentas_seleccionadas)]
+    anteriores = anteriores[anteriores['Nomb_Cuenta'].isin(cuentas_seleccionadas)]
 if usuario_input:
     anteriores = anteriores[anteriores['Usuario'].astype(str).str.contains(usuario_input, case=False, na=False)]
 if comp_input:
