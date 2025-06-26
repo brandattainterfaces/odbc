@@ -43,15 +43,16 @@ desde = st.sidebar.date_input("Desde", value=date_min, min_value=date_min, max_v
 hasta = st.sidebar.date_input("Hasta", value=date_max, min_value=date_min, max_value=date_max)
 
 cuentas_disponibles = df['Nomb_Cuenta'].dropna().unique()
-cuentas_seleccionadas = st.sidebar.multiselect(
-    "Nomb_Cuenta",
-    options=sorted(cuentas_disponibles.tolist()),
-    default=cuentas_disponibles.tolist(),
-    help="Buscá y seleccioná una o más cuentas"
-)
+cuenta_input = st.sidebar.selectbox("Cuenta", ["Todas"] + sorted(cuentas_disponibles.tolist()))
 
-usuario_input = st.sidebar.text_input("Filtrar por Usuario (contiene)")
-comp_input = st.sidebar.text_input("Filtrar por Comp. (contiene)")
+usuarios_disponibles = df['Usuario'].dropna().unique()
+usuario_input = st.sidebar.selectbox("Usuario", ["Todos"] + sorted(usuarios_disponibles.tolist()))
+
+empresas_disponibles = df['Empresa'].dropna().unique()
+empresa_input = st.sidebar.selectbox("Empresa", ["Todas"] + sorted(empresas_disponibles.tolist()))
+
+comps_disponibles = df['Comp.'].dropna().unique()
+comp_input = st.sidebar.selectbox("Comp.", ["Todos"] + sorted(comps_disponibles.tolist()))
 
 if desde > hasta:
     st.warning("La fecha 'Desde' debe ser anterior o igual a la fecha 'Hasta'.")
@@ -59,20 +60,24 @@ if desde > hasta:
 
 # Aplicar filtros
 df_filtrado = df[(df['Fecha'] >= desde) & (df['Fecha'] <= hasta)]
-if cuentas_seleccionadas:
-    df_filtrado = df_filtrado[df_filtrado['Nomb_Cuenta'].isin(cuentas_seleccionadas)]
-if usuario_input:
-    df_filtrado = df_filtrado[df_filtrado['Usuario'].astype(str).str.contains(usuario_input, case=False, na=False)]
-if comp_input:
-    df_filtrado = df_filtrado[df_filtrado['Comp.'].astype(str).str.contains(comp_input, case=False, na=False)]
+if cuenta_input != "Todas":
+    df_filtrado = df_filtrado[df_filtrado['Nomb_Cuenta'] == cuenta_input]
+if usuario_input != "Todos":
+    df_filtrado = df_filtrado[df_filtrado['Usuario'] == usuario_input]
+if comp_input != "Todos":
+    df_filtrado = df_filtrado[df_filtrado['Comp.'] == comp_input]
+if empresa_input != "Todas":
+    df_filtrado = df_filtrado[df_filtrado['Empresa'] == empresa_input]
 
 anteriores = df[(df['Fecha'] < desde)]
-if cuentas_seleccionadas:
-    anteriores = anteriores[anteriores['Nomb_Cuenta'].isin(cuentas_seleccionadas)]
-if usuario_input:
-    anteriores = anteriores[anteriores['Usuario'].astype(str).str.contains(usuario_input, case=False, na=False)]
-if comp_input:
-    anteriores = anteriores[anteriores['Comp.'].astype(str).str.contains(comp_input, case=False, na=False)]
+if cuenta_input != "Todas":
+    anteriores = anteriores[anteriores['Nomb_Cuenta'] == cuenta_input]
+if usuario_input != "Todos":
+    anteriores = anteriores[anteriores['Usuario'] == usuario_input]
+if comp_input != "Todos":
+    anteriores = anteriores[anteriores['Comp.'] == comp_input]
+if empresa_input != "Todas":
+    anteriores = anteriores[anteriores['Empresa'] == empresa_input]
 
 # Cálculos
 suma_debe = anteriores['Debe'].sum()
@@ -100,7 +105,18 @@ resultado = pd.concat([resumen, df_filtrado], ignore_index=True)
 
 # Mostrar resultados
 st.subheader("Vista Previa de Resultados")
-st.dataframe(resultado)
+st.dataframe(resultado, height=500)
+
+# Ajustar tamaño de fuente para la vista previa
+st.markdown("""
+    <style>
+    .dataframe td, .dataframe th {
+        font-size: 12px !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Exportar a Excel
 def to_excel(df):
