@@ -1,24 +1,22 @@
 import streamlit as st
 import pandas as pd
-import pyodbc
+import mysql.connector
 from io import BytesIO
 from datetime import datetime, date
 
 st.set_page_config(page_title="Filtro Contable", layout="wide")
 st.title("Filtro de Fechas - andy")
 
-# Configurar conexión ODBC
-conn_str = (
-    "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=clientes-dashboards.cssohkq7lsxq.us-east-1.rds.amazonaws.com;"
-    "DATABASE=glam;"
-    "UID=glam;"
-    "PWD=glam1234;"
-)
-
+# Configurar conexión MySQL (puerto 3306)
 try:
-    conn = pyodbc.connect(conn_str)
-    query = "SELECT * FROM andy"  # Cambiar si es necesario
+    conn = mysql.connector.connect(
+        host="clientes-dashboards.cssohkq7lsxq.us-east-1.rds.amazonaws.com",
+        user="glam",
+        password="glam1234",
+        database="glam",
+        port=3306
+    )
+    query = "SELECT * FROM andy"
     df = pd.read_sql(query, conn)
     conn.close()
 except Exception as e:
