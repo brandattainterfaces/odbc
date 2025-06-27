@@ -5,7 +5,7 @@ from io import BytesIO
 from datetime import datetime, date
 
 st.set_page_config(page_title="Filtro Contable", layout="wide")
-st.title("Filtro de Fechas - andy")
+st.title("Andy Web App Multiempresa")
 
 # Configurar conexión MySQL (puerto 3306)
 try:
