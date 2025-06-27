@@ -85,7 +85,6 @@ if comp_input != "Todos":
     df_filtrado = df_filtrado[df_filtrado['Comp'] == comp_input]
 if empresa_input != "Todas":
     df_filtrado = df_filtrado[df_filtrado['Empresa'] == empresa_input]
-    df_filtrado = df_filtrado[df_filtrado['Comp'] == comp_input]
 
 anteriores = df[(df['Fecha'] < desde)]
 if cuenta_input != "Todas":
