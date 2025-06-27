@@ -43,7 +43,11 @@ desde = st.sidebar.date_input("Desde", value=date_min, min_value=date_min, max_v
 hasta = st.sidebar.date_input("Hasta", value=date_max, min_value=date_min, max_value=date_max)
 
 cuentas_disponibles = df['Nomb_Cuenta'].dropna().unique()
-cuentas_disponibles = df['Nomb_Cuenta'].dropna().unique()
+cuenta_input = st.sidebar.selectbox(
+    "Cuenta",
+    options=["Todas"] + sorted(cuentas_disponibles.tolist()),
+    index=0
+)
 
 usuarios_disponibles = df['Usuario'].dropna().unique()
 usuario_input = st.sidebar.selectbox(
@@ -77,9 +81,10 @@ if cuenta_input != "Todas":
 if usuario_input != "Todos":
     df_filtrado = df_filtrado[df_filtrado['Usuario'] == usuario_input]
 if comp_input != "Todos":
-    df_filtrado = df_filtrado[df_filtrado['Comp'] == comp_input]
+    df_filtrado = df_filtrado[df_filtrado['Comp.'] == comp_input]
 if empresa_input != "Todas":
     df_filtrado = df_filtrado[df_filtrado['Empresa'] == empresa_input]
+    df_filtrado = df_filtrado[df_filtrado['Comp.'] == comp_input]
 
 anteriores = df[(df['Fecha'] < desde)]
 if cuenta_input != "Todas":
@@ -87,7 +92,7 @@ if cuenta_input != "Todas":
 if usuario_input != "Todos":
     anteriores = anteriores[anteriores['Usuario'] == usuario_input]
 if comp_input != "Todos":
-    anteriores = anteriores[anteriores['Comp'] == comp_input]
+    anteriores = anteriores[anteriores['Comp.'] == comp_input]
 if empresa_input != "Todas":
     anteriores = anteriores[anteriores['Empresa'] == empresa_input]
 
