@@ -50,11 +50,19 @@ cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
-# ✅ Nuevo filtro Cod Cuenta
+# ✅ Filtro: Cod Cuenta
 cod_cuentas_disponibles = df['Cuenta'].dropna().unique()
 cod_cuenta_input = st.sidebar.selectbox(
     "Cod Cuenta",
     options=["Todos"] + sorted(cod_cuentas_disponibles.tolist()),
+    index=0
+)
+
+# ✅ Filtro: Centro de Costo (OcrCode2)
+centros_disponibles = df['OcrCode2'].dropna().unique()
+centro_input = st.sidebar.selectbox(
+    "Centro de Costo",
+    options=["Todos"] + sorted(centros_disponibles.tolist()),
     index=0
 )
 
@@ -89,6 +97,8 @@ if cuenta_input != "Todas":
     df_filtrado = df_filtrado[df_filtrado['Nomb_Cuenta'] == cuenta_input]
 if cod_cuenta_input != "Todos":
     df_filtrado = df_filtrado[df_filtrado['Cuenta'] == cod_cuenta_input]
+if centro_input != "Todos":
+    df_filtrado = df_filtrado[df_filtrado['OcrCode2'] == centro_input]
 if usuario_input != "Todos":
     df_filtrado = df_filtrado[df_filtrado['Usuario'] == usuario_input]
 if comp_input != "Todos":
@@ -101,6 +111,8 @@ if cuenta_input != "Todas":
     anteriores = anteriores[anteriores['Nomb_Cuenta'] == cuenta_input]
 if cod_cuenta_input != "Todos":
     anteriores = anteriores[anteriores['Cuenta'] == cod_cuenta_input]
+if centro_input != "Todos":
+    anteriores = anteriores[anteriores['OcrCode2'] == centro_input]
 if usuario_input != "Todos":
     anteriores = anteriores[anteriores['Usuario'] == usuario_input]
 if comp_input != "Todos":
