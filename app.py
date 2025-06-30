@@ -208,4 +208,18 @@ def to_excel(df):
 
         # Formato contable para campos calculados
         money_format = workbook.add_format({'num_format': '#,##0.00_);[Red](#,##0.00)'})
-        for col_idx, col_name in en
+        for col_idx, col_name in enumerate(df.columns):
+            if col_name in ["Debe", "Haber", "Acumulado"]:
+                worksheet.set_column(col_idx, col_idx, 15, money_format)
+
+    return output.getvalue()
+
+excel_data = to_excel(df_export)
+st.download_button(
+    label="📥 Descargar Excel",
+    data=excel_data,
+    file_name="resultado_filtrado.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
+st.success("Archivo listo para descarga.")
