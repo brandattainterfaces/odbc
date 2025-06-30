@@ -50,6 +50,7 @@ cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
+# ✅ Filtro: Cod Cuenta
 cod_cuentas_disponibles = df['Cuenta'].dropna().unique()
 cod_cuenta_input = st.sidebar.selectbox(
     "Cod Cuenta",
@@ -57,6 +58,7 @@ cod_cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
+# ✅ Filtro: Centro de Costo (OcrCode2)
 centros_disponibles = df['OcrCode2'].dropna().unique()
 centro_input = st.sidebar.selectbox(
     "Centro de Costo",
@@ -85,17 +87,6 @@ comp_input = st.sidebar.selectbox(
     index=0
 )
 
-# Filtro robusto: Asiento
-if "Asiento" in df.columns and not df["Asiento"].dropna().empty:
-    asientos_disponibles = df['Asiento'].dropna().unique()
-    asiento_input = st.sidebar.selectbox(
-        "Asiento",
-        options=["Todos"] + sorted(asientos_disponibles.tolist()),
-        index=0
-    )
-else:
-    asiento_input = "Todos"
-
 if desde > hasta:
     st.warning("La fecha 'Desde' debe ser anterior o igual a la fecha 'Hasta'.")
     st.stop()
@@ -114,8 +105,6 @@ if comp_input != "Todos":
     df_filtrado = df_filtrado[df_filtrado['Comp'] == comp_input]
 if empresa_input != "Todas":
     df_filtrado = df_filtrado[df_filtrado['Empresa'] == empresa_input]
-if asiento_input != "Todos":
-    df_filtrado = df_filtrado[df_filtrado['Asiento'] == asiento_input]
 
 anteriores = df[(df['Fecha'] < desde)]
 if cuenta_input != "Todas":
@@ -130,8 +119,6 @@ if comp_input != "Todos":
     anteriores = anteriores[anteriores['Comp'] == comp_input]
 if empresa_input != "Todas":
     anteriores = anteriores[anteriores['Empresa'] == empresa_input]
-if asiento_input != "Todos":
-    anteriores = anteriores[anteriores['Asiento'] == asiento_input]
 
 # Cálculos
 suma_debe = anteriores['Debe'].sum()
@@ -157,18 +144,11 @@ cols = list(df_filtrado.columns)
 cols.insert(haber_index + 1, cols.pop(cols.index("Acumulado")))
 df_filtrado = df_filtrado[cols]
 
-# Mostrar resultados con formato contable en pantalla
+# Mostrar resultados
 st.subheader("Vista Previa de Resultados")
-st.dataframe(
-    df_filtrado.style.format({
-        "Debe": "$ {:,.2f}",
-        "Haber": "$ {:,.2f}",
-        "Acumulado": "$ {:,.2f}"
-    }),
-    height=500
-)
+st.dataframe(df_filtrado, height=500)
 
-# Ajustar estilo HTML
+# Ajustar tamaño de fuente para la vista previa (solo HTML, no Excel)
 st.markdown("""
     <style>
     .dataframe td, .dataframe th {
@@ -191,7 +171,7 @@ resumen_row.update({
 })
 df_export = pd.concat([pd.DataFrame([resumen_row]), df_filtrado], ignore_index=True)
 
-# Exportar a Excel con formato contable
+# Exportar a Excel
 def to_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -199,17 +179,17 @@ def to_excel(df):
         workbook = writer.book
         worksheet = writer.sheets['Resultado']
 
-        # Congelar encabezado
+        # Congelar la fila del encabezado
         worksheet.freeze_panes(1, 0)
 
-        # Fila resumen en negrita
+        # Formato en negrita para la fila resumen
         bold_format = workbook.add_format({'bold': True})
-        worksheet.set_row(1, None, bold_format)
+        worksheet.set_row(1, None, bold_format)  # Resumen está en la fila 1 (índice 1)
 
-        # Formato contable para campos calculados
+        # Formato contable para columnas Debe y Haber
         money_format = workbook.add_format({'num_format': '#,##0.00_);[Red](#,##0.00)'})
         for col_idx, col_name in enumerate(df.columns):
-            if col_name in ["Debe", "Haber", "Acumulado"]:
+            if col_name in ["Debe", "Haber"]:
                 worksheet.set_column(col_idx, col_idx, 15, money_format)
 
     return output.getvalue()
