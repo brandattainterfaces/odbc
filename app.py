@@ -87,13 +87,16 @@ comp_input = st.sidebar.selectbox(
     index=0
 )
 
-# ✅ Nuevo filtro: Asiento
-asientos_disponibles = df['Asiento'].dropna().unique()
-asiento_input = st.sidebar.selectbox(
-    "Asiento",
-    options=["Todos"] + sorted(asientos_disponibles.tolist()),
-    index=0
-)
+# ✅ Filtro robusto: Asiento
+if "Asiento" in df.columns and not df["Asiento"].dropna().empty:
+    asientos_disponibles = df['Asiento'].dropna().unique()
+    asiento_input = st.sidebar.selectbox(
+        "Asiento",
+        options=["Todos"] + sorted(asientos_disponibles.tolist()),
+        index=0
+    )
+else:
+    asiento_input = "Todos"
 
 if desde > hasta:
     st.warning("La fecha 'Desde' debe ser anterior o igual a la fecha 'Hasta'.")
