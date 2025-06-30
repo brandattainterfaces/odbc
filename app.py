@@ -50,7 +50,7 @@ cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
-# ✅ Filtro: Cod Cuenta
+# Filtro: Cod Cuenta
 cod_cuentas_disponibles = df['Cuenta'].dropna().unique()
 cod_cuenta_input = st.sidebar.selectbox(
     "Cod Cuenta",
@@ -58,7 +58,7 @@ cod_cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
-# ✅ Filtro: Centro de Costo (OcrCode2)
+# Filtro: Centro de Costo
 centros_disponibles = df['OcrCode2'].dropna().unique()
 centro_input = st.sidebar.selectbox(
     "Centro de Costo",
@@ -87,6 +87,14 @@ comp_input = st.sidebar.selectbox(
     index=0
 )
 
+# ✅ Nuevo filtro: Asiento
+asientos_disponibles = df['Asiento'].dropna().unique()
+asiento_input = st.sidebar.selectbox(
+    "Asiento",
+    options=["Todos"] + sorted(asientos_disponibles.tolist()),
+    index=0
+)
+
 if desde > hasta:
     st.warning("La fecha 'Desde' debe ser anterior o igual a la fecha 'Hasta'.")
     st.stop()
@@ -105,6 +113,8 @@ if comp_input != "Todos":
     df_filtrado = df_filtrado[df_filtrado['Comp'] == comp_input]
 if empresa_input != "Todas":
     df_filtrado = df_filtrado[df_filtrado['Empresa'] == empresa_input]
+if asiento_input != "Todos":
+    df_filtrado = df_filtrado[df_filtrado['Asiento'] == asiento_input]
 
 anteriores = df[(df['Fecha'] < desde)]
 if cuenta_input != "Todas":
@@ -119,6 +129,8 @@ if comp_input != "Todos":
     anteriores = anteriores[anteriores['Comp'] == comp_input]
 if empresa_input != "Todas":
     anteriores = anteriores[anteriores['Empresa'] == empresa_input]
+if asiento_input != "Todos":
+    anteriores = anteriores[anteriores['Asiento'] == asiento_input]
 
 # Cálculos
 suma_debe = anteriores['Debe'].sum()
@@ -203,3 +215,4 @@ st.download_button(
 )
 
 st.success("Archivo listo para descarga.")
+
