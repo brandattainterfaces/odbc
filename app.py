@@ -50,6 +50,14 @@ cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
+# 🚨 NUEVO FILTRO: Cod Cuenta
+cod_cuentas_disponibles = df['Cuenta'].dropna().unique()
+cod_cuenta_input = st.sidebar.selectbox(
+    "Cod Cuenta",
+    options=["Todos"] + sorted(cod_cuentas_disponibles.tolist()),
+    index=0
+)
+
 usuarios_disponibles = df['Usuario'].dropna().unique()
 usuario_input = st.sidebar.selectbox(
     "Usuario",
@@ -79,6 +87,8 @@ if desde > hasta:
 df_filtrado = df[(df['Fecha'] >= desde) & (df['Fecha'] <= hasta)]
 if cuenta_input != "Todas":
     df_filtrado = df_filtrado[df_filtrado['Nomb_Cuenta'] == cuenta_input]
+if cod_cuenta_input != "Todos":
+    df_filtrado = df_filtrado[df_filtrado['Cuenta'] == cod_cuenta_input]
 if usuario_input != "Todos":
     df_filtrado = df_filtrado[df_filtrado['Usuario'] == usuario_input]
 if comp_input != "Todos":
@@ -89,6 +99,8 @@ if empresa_input != "Todas":
 anteriores = df[(df['Fecha'] < desde)]
 if cuenta_input != "Todas":
     anteriores = anteriores[anteriores['Nomb_Cuenta'] == cuenta_input]
+if cod_cuenta_input != "Todos":
+    anteriores = anteriores[anteriores['Cuenta'] == cod_cuenta_input]
 if usuario_input != "Todos":
     anteriores = anteriores[anteriores['Usuario'] == usuario_input]
 if comp_input != "Todos":
@@ -96,87 +108,8 @@ if comp_input != "Todos":
 if empresa_input != "Todas":
     anteriores = anteriores[anteriores['Empresa'] == empresa_input]
 
-# Cálculos
-suma_debe = anteriores['Debe'].sum()
-suma_haber = anteriores['Haber'].sum()
-inicial = suma_debe - suma_haber
-
-# Mostrar resumen previo como métricas encima de la tabla
-st.subheader("Resumen Acumulado Previo")
-col1, col2, col3 = st.columns(3)
-col1.metric("💰 Acumulado Debe Previo", f"${suma_debe:,.2f}")
-col2.metric("🏦 Acumulado Haber Previo", f"${suma_haber:,.2f}")
-col3.metric("📊 Balance Inicial", f"${inicial:,.2f}")
-
-# Calcular columna acumulada
-df_filtrado = df_filtrado.copy()
-df_filtrado["Acumulado"] = df_filtrado.apply(
-    lambda row: row["Debe"] - row["Haber"], axis=1
-).cumsum() + inicial
-
-# Insertar columna después de "Haber"
-haber_index = df_filtrado.columns.get_loc("Haber")
-cols = list(df_filtrado.columns)
-cols.insert(haber_index + 1, cols.pop(cols.index("Acumulado")))
-df_filtrado = df_filtrado[cols]
-
-# Mostrar resultados
+# Mostrar por ahora solo resultados filtrados
 st.subheader("Vista Previa de Resultados")
 st.dataframe(df_filtrado, height=500)
 
-# Ajustar tamaño de fuente para la vista previa (solo HTML, no Excel)
-st.markdown("""
-    <style>
-    .dataframe td, .dataframe th {
-        font-size: 12px !important;
-        padding-top: 2px !important;
-        padding-bottom: 2px !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Preparar resumen para exportar (solo para Excel)
-resumen_row = {
-    col: "" for col in df_filtrado.columns
-}
-resumen_row.update({
-    "Debe": suma_debe,
-    "Haber": suma_haber,
-    "Acumulado": inicial,
-    "Bajada": "Saldos Previos" if "Bajada" in df_filtrado.columns else "Resumen"
-})
-df_export = pd.concat([pd.DataFrame([resumen_row]), df_filtrado], ignore_index=True)
-
-# Exportar a Excel
-def to_excel(df):
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Resultado')
-        workbook = writer.book
-        worksheet = writer.sheets['Resultado']
-
-        # Congelar la fila del encabezado
-        worksheet.freeze_panes(1, 0)
-
-        # Formato en negrita para la fila resumen
-        bold_format = workbook.add_format({'bold': True})
-        worksheet.set_row(1, None, bold_format)  # Resumen está en la fila 1 (índice 1)
-
-        # Formato contable para columnas Debe y Haber
-        money_format = workbook.add_format({'num_format': '#,##0.00_);[Red](#,##0.00)'})
-        for col_idx, col_name in enumerate(df.columns):
-            if col_name in ["Debe", "Haber"]:
-                worksheet.set_column(col_idx, col_idx, 15, money_format)
-
-    return output.getvalue()
-
-excel_data = to_excel(df_export)
-st.download_button(
-    label="📥 Descargar Excel",
-    data=excel_data,
-    file_name="resultado_filtrado.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-
-st.success("Archivo listo para descarga.")
 
