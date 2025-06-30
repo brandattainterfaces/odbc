@@ -4,7 +4,7 @@ import mysql.connector
 from io import BytesIO
 from datetime import datetime, date
 
-st.set_page_config(page_title="Filtro Contable", layout="wide")
+st.set_page_config(page_title="Glam Mayores Multiempresa", layout="wide")
 st.title("Andy Web App Multiempresa")
 
 # Configurar conexión MySQL (puerto 3306)
@@ -207,7 +207,7 @@ def to_excel(df):
         worksheet.set_row(1, None, bold_format)
 
         # Formato contable para campos calculados
-        money_format = workbook.add_format({'num_format': '#,##0.00_);[Red](#,##0.00)'})
+        money_format = workbook.add_format({'num_format': '#.##0,00_);[Red](#.##0,00)'})
         for col_idx, col_name in enumerate(df.columns):
             if col_name in ["Debe", "Haber", "Acumulado"]:
                 worksheet.set_column(col_idx, col_idx, 15, money_format)
