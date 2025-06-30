@@ -50,7 +50,6 @@ cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
-# Filtro: Cod Cuenta
 cod_cuentas_disponibles = df['Cuenta'].dropna().unique()
 cod_cuenta_input = st.sidebar.selectbox(
     "Cod Cuenta",
@@ -58,7 +57,6 @@ cod_cuenta_input = st.sidebar.selectbox(
     index=0
 )
 
-# Filtro: Centro de Costo
 centros_disponibles = df['OcrCode2'].dropna().unique()
 centro_input = st.sidebar.selectbox(
     "Centro de Costo",
@@ -87,7 +85,7 @@ comp_input = st.sidebar.selectbox(
     index=0
 )
 
-# ✅ Filtro robusto: Asiento
+# Filtro robusto: Asiento
 if "Asiento" in df.columns and not df["Asiento"].dropna().empty:
     asientos_disponibles = df['Asiento'].dropna().unique()
     asiento_input = st.sidebar.selectbox(
@@ -159,11 +157,18 @@ cols = list(df_filtrado.columns)
 cols.insert(haber_index + 1, cols.pop(cols.index("Acumulado")))
 df_filtrado = df_filtrado[cols]
 
-# Mostrar resultados
+# Mostrar resultados con formato contable en pantalla
 st.subheader("Vista Previa de Resultados")
-st.dataframe(df_filtrado, height=500)
+st.dataframe(
+    df_filtrado.style.format({
+        "Debe": "$ {:,.2f}",
+        "Haber": "$ {:,.2f}",
+        "Acumulado": "$ {:,.2f}"
+    }),
+    height=500
+)
 
-# Ajustar tamaño de fuente para la vista previa (solo HTML, no Excel)
+# Ajustar estilo HTML
 st.markdown("""
     <style>
     .dataframe td, .dataframe th {
@@ -186,7 +191,7 @@ resumen_row.update({
 })
 df_export = pd.concat([pd.DataFrame([resumen_row]), df_filtrado], ignore_index=True)
 
-# Exportar a Excel
+# Exportar a Excel con formato contable
 def to_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -194,17 +199,17 @@ def to_excel(df):
         workbook = writer.book
         worksheet = writer.sheets['Resultado']
 
-        # Congelar la fila del encabezado
+        # Congelar encabezado
         worksheet.freeze_panes(1, 0)
 
-        # Formato en negrita para la fila resumen
+        # Fila resumen en negrita
         bold_format = workbook.add_format({'bold': True})
-        worksheet.set_row(1, None, bold_format)  # Resumen está en la fila 1 (índice 1)
+        worksheet.set_row(1, None, bold_format)
 
-        # Formato contable para columnas Debe y Haber
+        # Formato contable para campos calculados
         money_format = workbook.add_format({'num_format': '#,##0.00_);[Red](#,##0.00)'})
         for col_idx, col_name in enumerate(df.columns):
-            if col_name in ["Debe", "Haber"]:
+            if col_name in ["Debe", "Haber", "Acumulado"]:
                 worksheet.set_column(col_idx, col_idx, 15, money_format)
 
     return output.getvalue()
