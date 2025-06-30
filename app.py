@@ -161,9 +161,9 @@ df_filtrado = df_filtrado[cols]
 st.subheader("Vista Previa de Resultados")
 st.dataframe(
     df_filtrado.style.format({
-        "Debe": "R$ {:,.2f}",
-        "Haber": "R$ {:,.2f}",
-        "Acumulado": "R$ {:,.2f}"
+        "Debe": "$ {:,.2f}",
+        "Haber": "$ {:,.2f}",
+        "Acumulado": "$ {:,.2f}"
     }),
     height=500
 )
