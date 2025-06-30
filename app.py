@@ -100,10 +100,13 @@ if empresa_input != "Todas":
 suma_debe = anteriores['Debe'].sum()
 suma_haber = anteriores['Haber'].sum()
 inicial = suma_debe - suma_haber
-resumen = pd.DataFrame([{
-    "Acumulado Debe Previo": suma_debe,
-    "Acumulado Haber Previo": suma_haber
-}])
+
+# Mostrar resumen previo como métricas encima de la tabla
+st.subheader("Resumen Acumulado Previo")
+col1, col2, col3 = st.columns(3)
+col1.metric("💰 Acumulado Debe Previo", f"${suma_debe:,.2f}")
+col2.metric("🏦 Acumulado Haber Previo", f"${suma_haber:,.2f}")
+col3.metric("📊 Balance Inicial", f"${inicial:,.2f}")
 
 # Calcular columna acumulada
 df_filtrado = df_filtrado.copy()
@@ -117,12 +120,9 @@ cols = list(df_filtrado.columns)
 cols.insert(haber_index + 1, cols.pop(cols.index("Acumulado")))
 df_filtrado = df_filtrado[cols]
 
-# Combinar resultados
-resultado = pd.concat([resumen, df_filtrado], ignore_index=True)
-
 # Mostrar resultados
 st.subheader("Vista Previa de Resultados")
-st.dataframe(resultado, height=500)
+st.dataframe(df_filtrado, height=500)
 
 # Ajustar tamaño de fuente para la vista previa (solo HTML, no Excel)
 st.markdown("""
@@ -135,6 +135,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Preparar resumen para exportar (solo para Excel)
+resumen_row = {
+    col: "" for col in df_filtrado.columns
+}
+resumen_row.update({
+    "Debe": suma_debe,
+    "Haber": suma_haber,
+    "Acumulado": inicial,
+    "Glosa": "Saldos Previos" if "Glosa" in df_filtrado.columns else "Resumen"
+})
+df_export = pd.concat([pd.DataFrame([resumen_row]), df_filtrado], ignore_index=True)
+
 # Exportar a Excel
 def to_excel(df):
     output = BytesIO()
@@ -142,7 +154,7 @@ def to_excel(df):
         df.to_excel(writer, index=False, sheet_name='Resultado')
     return output.getvalue()
 
-excel_data = to_excel(resultado)
+excel_data = to_excel(df_export)
 st.download_button(
     label="📥 Descargar Excel",
     data=excel_data,
@@ -151,3 +163,4 @@ st.download_button(
 )
 
 st.success("Archivo listo para descarga.")
+
