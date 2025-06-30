@@ -143,7 +143,7 @@ resumen_row.update({
     "Debe": suma_debe,
     "Haber": suma_haber,
     "Acumulado": inicial,
-    "Glosa": "Saldos Previos" if "Glosa" in df_filtrado.columns else "Resumen"
+    "Bajada": "Saldos Previos" if "Bajada" in df_filtrado.columns else "Resumen"
 })
 df_export = pd.concat([pd.DataFrame([resumen_row]), df_filtrado], ignore_index=True)
 
@@ -152,6 +152,22 @@ def to_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Resultado')
+        workbook = writer.book
+        worksheet = writer.sheets['Resultado']
+
+        # Congelar la fila del encabezado
+        worksheet.freeze_panes(1, 0)
+
+        # Formato en negrita para la fila resumen
+        bold_format = workbook.add_format({'bold': True})
+        worksheet.set_row(1, None, bold_format)  # Resumen está en la fila 1 (índice 1)
+
+        # Formato contable para columnas Debe y Haber
+        money_format = workbook.add_format({'num_format': '#,##0.00_);[Red](#,##0.00)'})
+        for col_idx, col_name in enumerate(df.columns):
+            if col_name in ["Debe", "Haber"]:
+                worksheet.set_column(col_idx, col_idx, 15, money_format)
+
     return output.getvalue()
 
 excel_data = to_excel(df_export)
